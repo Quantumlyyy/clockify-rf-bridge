@@ -1,0 +1,15 @@
+minimumReleaseAge: 10080
+blockExoticSubdeps: true
+savePrefix: ''
+
+trustLockfile: false
+trustPolicy: no-downgrade
+trustPolicyIgnoreAfter: 525600
+trustPolicyExclude:
+  - chokidar@4.0.3 # provenance gap in 4.0.2/4.0.3, restored in v5 — paulmillr/chokidar#1440
+
+allowBuilds:
+  workerd: true
+  sharp: true
+  esbuild: true
+
