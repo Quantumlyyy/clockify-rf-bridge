@@ -16,3 +16,39 @@ allowBuilds:
   workerd: true
   sharp: true
   esbuild: true
+  better-sqlite3: false # transitive drizzle peer — not used (durable-sqlite at runtime)
+
+# https://pnpm.io/catalogs#catalogmode — only catalog-pinned versions allowed via pnpm add
+catalogMode: strict
+
+catalog:
+  '@changesets/cli': 2.31.0
+  '@cloudflare/workers-types': 4.20260530.1
+  '@eslint/compat': 2.0.4
+  '@eslint/js': 10.0.1
+  '@sveltejs/adapter-cloudflare': 7.2.8
+  '@sveltejs/kit': 2.60.1
+  '@sveltejs/vite-plugin-svelte': 7.0.0
+  '@types/node': 24.0.3
+  '@vitest/browser-playwright': 4.1.7
+  drizzle-kit: 0.31.10
+  drizzle-orm: 0.45.2
+  effect: 3.21.2
+  eslint: 10.4.1
+  eslint-config-prettier: 10.1.8
+  eslint-plugin-drizzle: 0.2.3
+  eslint-plugin-oxlint: 1.67.0
+  eslint-plugin-svelte: 3.17.0
+  globals: 17.4.0
+  jose: 6.2.3
+  oxfmt: 0.52.0
+  oxlint: 1.67.0
+  playwright: 1.59.1
+  svelte: 5.55.7
+  svelte-check: 4.4.6
+  typescript: 6.0.2
+  typescript-eslint: 8.58.1
+  vite: 8.0.7
+  vitest: 4.1.7
+  vitest-browser-svelte: 2.1.0
+  wrangler: 4.95.0

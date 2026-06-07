@@ -22,16 +22,17 @@
 		"db:generate": "pnpm --filter @clockify-rf-bridge/db db:generate"
 	},
 	"devDependencies": {
-		"@eslint/compat": "2.0.4",
-		"@eslint/js": "10.0.1",
-		"eslint": "10.4.1",
-		"eslint-config-prettier": "10.1.8",
-		"eslint-plugin-drizzle": "0.2.3",
-		"eslint-plugin-oxlint": "1.67.0",
-		"eslint-plugin-svelte": "3.17.0",
-		"globals": "17.4.0",
-		"oxfmt": "0.52.0",
-		"oxlint": "1.67.0",
-		"typescript-eslint": "8.58.1"
+		"@changesets/cli": "catalog:",
+		"@eslint/compat": "catalog:",
+		"@eslint/js": "catalog:",
+		"eslint": "catalog:",
+		"eslint-config-prettier": "catalog:",
+		"eslint-plugin-drizzle": "catalog:",
+		"eslint-plugin-oxlint": "catalog:",
+		"eslint-plugin-svelte": "catalog:",
+		"globals": "catalog:",
+		"oxfmt": "catalog:",
+		"oxlint": "catalog:",
+		"typescript-eslint": "catalog:"
 	}
 }

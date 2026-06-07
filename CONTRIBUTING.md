@@ -26,6 +26,23 @@ pnpm check     # svelte-check type-check
 
 CI runs the same checks on every push and pull request.
 
+## Changelog
+
+User-facing changes should include a changeset. From the repo root:
+
+```bash
+pnpm changeset
+```
+
+Pick the affected packages, choose a semver bump (patch/minor/major), and write a short summary. Commit the generated `.changeset/*.md` file with your PR.
+
+After merge to `master`, CI opens a **chore: update changelog** PR that bumps versions and updates [`apps/bridge/CHANGELOG.md`](apps/bridge/CHANGELOG.md). Merge that PR to publish the changelog entry. Nothing is published to npm.
+
+## Monorepo tooling
+
+- **Dependency versions** are centralized in [`pnpm-workspace.yaml`](pnpm-workspace.yaml) via [pnpm catalogs](https://pnpm.io/catalogs). Use `"catalog:"` in `package.json` instead of pinning versions directly.
+- **Config dependencies** ([pnpm config deps](https://pnpm.io/config-dependencies)) are deferred until a second repo needs shared lint rules, security defaults, or patches. When that happens, extract tooling into an `@quantumly/pnpm-plugin-*` package rather than duplicating catalog entries.
+
 ## Code style
 
 - Format with **oxfmt** (`pnpm format`). Do not add Prettier config.

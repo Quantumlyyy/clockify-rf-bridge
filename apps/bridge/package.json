@@ -19,24 +19,24 @@
 		"@clockify-rf-bridge/invoice-core": "workspace:*",
 		"@clockify-rf-bridge/request-finance": "workspace:*",
 		"@clockify-rf-bridge/workspace-store": "workspace:*",
-		"drizzle-orm": "0.45.2",
-		"effect": "3.21.2",
-		"jose": "6.2.3"
+		"drizzle-orm": "catalog:",
+		"effect": "catalog:",
+		"jose": "catalog:"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "4.20260530.1",
-		"@sveltejs/adapter-cloudflare": "7.2.8",
-		"@sveltejs/kit": "2.60.1",
-		"@sveltejs/vite-plugin-svelte": "7.0.0",
-		"@types/node": "24.0.3",
-		"@vitest/browser-playwright": "4.1.7",
-		"playwright": "1.59.1",
-		"svelte": "5.55.7",
-		"svelte-check": "4.4.6",
-		"typescript": "6.0.2",
-		"vite": "8.0.7",
-		"vitest": "4.1.7",
-		"vitest-browser-svelte": "2.1.0",
-		"wrangler": "4.95.0"
+		"@cloudflare/workers-types": "catalog:",
+		"@sveltejs/adapter-cloudflare": "catalog:",
+		"@sveltejs/kit": "catalog:",
+		"@sveltejs/vite-plugin-svelte": "catalog:",
+		"@types/node": "catalog:",
+		"@vitest/browser-playwright": "catalog:",
+		"playwright": "catalog:",
+		"svelte": "catalog:",
+		"svelte-check": "catalog:",
+		"typescript": "catalog:",
+		"vite": "catalog:",
+		"vitest": "catalog:",
+		"vitest-browser-svelte": "catalog:",
+		"wrangler": "catalog:"
 	}
 }

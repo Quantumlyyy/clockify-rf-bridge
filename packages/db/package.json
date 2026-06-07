@@ -13,11 +13,11 @@
 		"test": "vitest --run"
 	},
 	"dependencies": {
-		"drizzle-orm": "0.45.2"
+		"drizzle-orm": "catalog:"
 	},
 	"devDependencies": {
-		"drizzle-kit": "0.31.10",
-		"typescript": "6.0.2",
-		"vitest": "4.1.7"
+		"drizzle-kit": "catalog:",
+		"typescript": "catalog:",
+		"vitest": "catalog:"
 	}
 }
