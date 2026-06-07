@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/github/Quantumlyyy/clockify-rf-bridge/branch/master/graph/badge.svg?token=CI03O3EEMW)](https://codecov.io/github/Quantumlyyy/clockify-rf-bridge)
+
 # Clockify ↔ Request Finance Bridge
 
 A Clockify add-on that turns a saved Clockify invoice into a Request Finance USDC crypto invoice and writes the payment link back into the Clockify invoice note.
