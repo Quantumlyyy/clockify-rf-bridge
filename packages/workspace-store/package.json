@@ -12,11 +12,11 @@
 	},
 	"dependencies": {
 		"@clockify-rf-bridge/db": "workspace:*",
-		"drizzle-orm": "0.44.7"
+		"drizzle-orm": "0.45.2"
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "4.20260530.1",
 		"typescript": "6.0.2",
-		"vitest": "4.1.3"
+		"vitest": "4.1.7"
 	}
 }
