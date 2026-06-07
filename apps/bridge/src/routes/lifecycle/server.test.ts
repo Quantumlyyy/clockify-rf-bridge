@@ -9,6 +9,7 @@ vi.mock('$lib/server/lifecycle', () => ({
 
 import { POST } from './+server';
 import { handleLifecycle } from '$lib/server/lifecycle';
+import { ForbiddenError } from '$lib/server/errors';
 
 const ADDON_KEY = 'clockify-rf-bridge';
 
@@ -69,5 +70,26 @@ describe('POST /lifecycle', () => {
 			expect.any(String),
 			expect.objectContaining({ ADDON_KEY })
 		);
+	});
+
+	it('returns 403 when handleLifecycle rejects with workspace mismatch', async () => {
+		vi.mocked(handleLifecycle).mockRejectedValueOnce(new ForbiddenError('Workspace mismatch'));
+
+		const res = await POST({
+			request: new Request('https://bridge/lifecycle', {
+				method: 'POST',
+				headers: {
+					'X-Addon-Lifecycle-Token': 'token',
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					type: 'DELETED',
+					workspaceId: 'ws-victim'
+				})
+			}),
+			platform: { env: { ADDON_KEY } as unknown as Env }
+		} as Parameters<typeof POST>[0]);
+
+		expect(res.status).toBe(403);
 	});
 });

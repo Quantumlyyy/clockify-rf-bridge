@@ -1,5 +1,5 @@
 import { deleteClientMappings } from '@clockify-rf-bridge/workspace-store';
-import { verifyClockifyJwt } from './auth';
+import { requireMatchingWorkspace, verifyClockifyJwt } from './auth';
 import { getInstallToken } from './clients/clockify';
 import { BadRequestError } from './errors';
 import {
@@ -21,34 +21,35 @@ export async function handleLifecycle(
 	lifecycleToken: string,
 	env: Env
 ): Promise<void> {
-	await verifyClockifyJwt(lifecycleToken, env);
+	const claims = await verifyClockifyJwt(lifecycleToken, env);
+	requireMatchingWorkspace(claims, payload, env);
+	const workspaceId = claims.workspaceId;
 
 	switch (payload.type) {
 		case 'INSTALLED': {
 			if (!payload.authToken) {
 				throw new BadRequestError('INSTALLED lifecycle missing authToken');
 			}
-			await storeEncryptedToken(env, payload.workspaceId, 'clockify_install', payload.authToken);
+			await storeEncryptedToken(env, workspaceId, 'clockify_install', payload.authToken);
 			break;
 		}
 		case 'SETTINGS_UPDATED': {
-			await env.cache.delete(`settings:${payload.workspaceId}`);
-			const installToken = await getInstallToken(env, payload.workspaceId);
-			const claims = await verifyClockifyJwt(lifecycleToken, env);
+			await env.cache.delete(`settings:${workspaceId}`);
+			const installToken = await getInstallToken(env, workspaceId);
 			const settings = await loadWorkspaceSettings(
 				claims.backendUrl,
-				payload.workspaceId,
+				workspaceId,
 				installToken,
 				env
 			);
-			await syncLegacyClientMapToDo(env, payload.workspaceId, settings);
+			await syncLegacyClientMapToDo(env, workspaceId, settings);
 			break;
 		}
 		case 'DELETED': {
-			await deleteWorkspaceSecretsForWorkspace(env, payload.workspaceId);
-			await deleteWorkspaceMappingsForWorkspace(env, payload.workspaceId);
-			await deleteClientMappings(env, payload.workspaceId);
-			await env.cache.delete(`settings:${payload.workspaceId}`);
+			await deleteWorkspaceSecretsForWorkspace(env, workspaceId);
+			await deleteWorkspaceMappingsForWorkspace(env, workspaceId);
+			await deleteClientMappings(env, workspaceId);
+			await env.cache.delete(`settings:${workspaceId}`);
 			break;
 		}
 	}

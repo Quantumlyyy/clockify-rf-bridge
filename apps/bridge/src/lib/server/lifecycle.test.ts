@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { resetPublicKeyCacheForTests, setVerificationKeyForTests } from './auth';
 import { CLOCKIFY_JWT_ISSUER, CLOCKIFY_JWT_TYPE } from './config';
 import { handleLifecycle } from './lifecycle';
-import { BadRequestError } from './errors';
+import { BadRequestError, ForbiddenError } from './errors';
 
 vi.mock('@clockify-rf-bridge/workspace-store', () => ({
 	storeEncryptedTokenRow: vi.fn(async () => undefined),
@@ -32,11 +32,11 @@ import { getEncryptedToken } from './workspace/tokens';
 const TEST_KEK = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
 const ADDON_KEY = 'clockify-rf-bridge';
 
-async function lifecycleToken(privateKey: CryptoKey): Promise<string> {
+async function lifecycleToken(privateKey: CryptoKey, workspaceId = 'ws-1'): Promise<string> {
 	return new SignJWT({
 		type: CLOCKIFY_JWT_TYPE,
 		backendUrl: 'https://api.clockify.me/api',
-		workspaceId: 'ws-1'
+		workspaceId
 	})
 		.setProtectedHeader({ alg: 'RS256' })
 		.setIssuer(CLOCKIFY_JWT_ISSUER)
@@ -49,6 +49,8 @@ describe('lifecycle', () => {
 	afterEach(() => {
 		resetPublicKeyCacheForTests();
 		vi.mocked(storeEncryptedTokenRow).mockClear();
+		vi.mocked(deleteClientMappings).mockClear();
+		vi.mocked(upsertClientMappings).mockClear();
 		vi.mocked(getEncryptedToken).mockReset();
 		vi.unstubAllGlobals();
 	});
@@ -147,5 +149,72 @@ describe('lifecycle', () => {
 		);
 
 		expect(deleteClientMappings).toHaveBeenCalledWith(env, 'ws-1');
+	});
+
+	it('INSTALLED rejects cross-workspace payload', async () => {
+		const pair = await generateKeyPair('RS256');
+		await setVerificationKeyForTests(await exportSPKI(pair.publicKey));
+		const env = {
+			WORKSPACE: {} as DurableObjectNamespace,
+			KEK: { get: async () => TEST_KEK },
+			cache: { delete: async () => {} },
+			ADDON_KEY
+		} as unknown as Env;
+
+		await expect(
+			handleLifecycle(
+				{ type: 'INSTALLED', workspaceId: 'ws-victim', authToken: 'install-secret' },
+				await lifecycleToken(pair.privateKey, 'ws-attacker'),
+				env
+			)
+		).rejects.toBeInstanceOf(ForbiddenError);
+
+		expect(storeEncryptedTokenRow).not.toHaveBeenCalled();
+	});
+
+	it('SETTINGS_UPDATED rejects cross-workspace payload', async () => {
+		const pair = await generateKeyPair('RS256');
+		await setVerificationKeyForTests(await exportSPKI(pair.publicKey));
+		const env = {
+			WORKSPACE: {} as DurableObjectNamespace,
+			KEK: { get: async () => TEST_KEK },
+			cache: {
+				delete: async () => {},
+				get: async () => null,
+				put: async () => {}
+			},
+			ADDON_KEY
+		} as unknown as Env;
+
+		await expect(
+			handleLifecycle(
+				{ type: 'SETTINGS_UPDATED', workspaceId: 'ws-victim' },
+				await lifecycleToken(pair.privateKey, 'ws-attacker'),
+				env
+			)
+		).rejects.toBeInstanceOf(ForbiddenError);
+
+		expect(upsertClientMappings).not.toHaveBeenCalled();
+	});
+
+	it('DELETED rejects cross-workspace payload', async () => {
+		const pair = await generateKeyPair('RS256');
+		await setVerificationKeyForTests(await exportSPKI(pair.publicKey));
+		const env = {
+			WORKSPACE: {} as DurableObjectNamespace,
+			KEK: { get: async () => TEST_KEK },
+			cache: { delete: async () => {} },
+			ADDON_KEY
+		} as unknown as Env;
+
+		await expect(
+			handleLifecycle(
+				{ type: 'DELETED', workspaceId: 'ws-victim' },
+				await lifecycleToken(pair.privateKey, 'ws-attacker'),
+				env
+			)
+		).rejects.toBeInstanceOf(ForbiddenError);
+
+		expect(deleteClientMappings).not.toHaveBeenCalled();
 	});
 });

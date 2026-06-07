@@ -2,6 +2,7 @@ import { exportSPKI, generateKeyPair, SignJWT } from 'jose';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
 	requireAdmin,
+	requireMatchingWorkspace,
 	resetPublicKeyCacheForTests,
 	setVerificationKeyForTests,
 	verifyClockifyJwt
@@ -123,5 +124,59 @@ describe('auth', () => {
 				user: { admin: false }
 			})
 		).toThrow(/Admin access required/);
+	});
+
+	it('requireMatchingWorkspace passes when workspace and addon match', () => {
+		expect(() =>
+			requireMatchingWorkspace(
+				{
+					backendUrl: 'https://api.clockify.me/api',
+					workspaceId: 'ws-1',
+					addonId: ADDON_KEY
+				},
+				{ workspaceId: 'ws-1', addonId: ADDON_KEY },
+				mockEnv()
+			)
+		).not.toThrow();
+	});
+
+	it('requireMatchingWorkspace rejects workspace mismatch', () => {
+		expect(() =>
+			requireMatchingWorkspace(
+				{
+					backendUrl: 'https://api.clockify.me/api',
+					workspaceId: 'ws-attacker'
+				},
+				{ workspaceId: 'ws-victim' },
+				mockEnv()
+			)
+		).toThrow(/Workspace mismatch/);
+	});
+
+	it('requireMatchingWorkspace rejects payload addon mismatch', () => {
+		expect(() =>
+			requireMatchingWorkspace(
+				{
+					backendUrl: 'https://api.clockify.me/api',
+					workspaceId: 'ws-1'
+				},
+				{ workspaceId: 'ws-1', addonId: 'wrong-addon' },
+				mockEnv()
+			)
+		).toThrow(/Addon mismatch/);
+	});
+
+	it('requireMatchingWorkspace rejects claims addon mismatch', () => {
+		expect(() =>
+			requireMatchingWorkspace(
+				{
+					backendUrl: 'https://api.clockify.me/api',
+					workspaceId: 'ws-1',
+					addonId: 'wrong-addon'
+				},
+				{ workspaceId: 'ws-1' },
+				mockEnv()
+			)
+		).toThrow(/Addon mismatch/);
 	});
 });

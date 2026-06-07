@@ -91,6 +91,23 @@ export function requireAdmin(claims: ClockifyClaims): void {
 	}
 }
 
+export function requireMatchingWorkspace(
+	claims: ClockifyClaims,
+	payload: { workspaceId: string; addonId?: string },
+	env: Env
+): void {
+	if (payload.workspaceId !== claims.workspaceId) {
+		throw new ForbiddenError('Workspace mismatch');
+	}
+	const addonKey = getAddonKey(env);
+	if (payload.addonId && payload.addonId !== addonKey) {
+		throw new ForbiddenError('Addon mismatch');
+	}
+	if (claims.addonId && claims.addonId !== addonKey) {
+		throw new ForbiddenError('Addon mismatch');
+	}
+}
+
 export function resetPublicKeyCacheForTests(): void {
 	cachedPublicKey = null;
 }
