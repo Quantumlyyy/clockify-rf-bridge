@@ -2,83 +2,88 @@
 
 Cloudflare Workers add-on that creates a Request Finance USDC crypto invoice from a saved Clockify invoice and writes the payment link into the Clockify invoice note.
 
+## Monorepo layout
+
+```
+apps/bridge/                         SvelteKit + Cloudflare Workers app
+packages/request-finance/            Effect Schema + RF HTTP client (no business logic)
+packages/db/                         Drizzle schema + DO SQLite migrations
+packages/workspace-store/            Per-workspace Durable Object + RPC client
+packages/invoice-core/               Effect invoice orchestration state machine
+```
+
 ## Stack
 
 - SvelteKit + `@sveltejs/adapter-cloudflare`
-- D1 (`persistence`) via Drizzle ORM, KV (`cache`), Secrets Store (`KEK` → `RF_KEK`)
-- Runtime dependencies: `drizzle-orm`, `jose` (JWT verification)
+- Durable Objects (`WORKSPACE`) with Drizzle `durable-sqlite` — one `WorkspaceStore` per Clockify workspace
+- KV (`cache`), Secrets Store (`KEK` → `RF_KEK`)
+- Effect + Effect Schema for RF client and invoice flow
 
 ## Local development
 
 ```bash
-cp .dev.vars.example .dev.vars
-# Edit .dev.vars: ADDON_KEY, RF_KEK (64-char hex)
+cp .dev.vars.example apps/bridge/.dev.vars
+# Edit apps/bridge/.dev.vars: ADDON_KEY, RF_KEK (64-char hex)
 
 pnpm install
 pnpm gen
-wrangler d1 migrations apply persistence --local
 pnpm dev
 ```
 
 Manifest URL (local): `http://localhost:5173/manifest`
 
-## Database
+## Workspace persistence
 
-Schema is defined in [`src/lib/server/db/schema.ts`](src/lib/server/db/schema.ts) using Drizzle ORM. Migrations live in [`migrations/`](migrations/) and are applied with Wrangler:
+All workspace-scoped data lives in a `WorkspaceStore` Durable Object keyed by `idFromName(workspaceId)`:
 
-```bash
-wrangler d1 migrations apply persistence --local   # dev
-wrangler d1 migrations apply persistence --remote  # production
-```
+| Table               | Purpose                                                        |
+| ------------------- | -------------------------------------------------------------- |
+| `encrypted_secrets` | Clockify install token + RF API token (encrypted)              |
+| `invoice_mappings`  | Idempotency — completed invoice → RF payment link              |
+| `invoice_runs`      | In-flight orchestration state for resume after partial failure |
 
-After changing the schema, generate a new migration:
+Schema: [`packages/db/src/schema.ts`](packages/db/src/schema.ts). Migrations run automatically inside each DO on first access.
 
-```bash
-pnpm db:generate
-```
+## D1 → DO migration (production)
 
-For quick local schema iteration (without migration files), `pnpm db:push` pushes directly to a remote D1 via the HTTP API. It requires `.env` vars: `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_DATABASE_ID`, `CLOUDFLARE_D1_TOKEN`.
+If you have existing data in the old D1 `persistence` database:
+
+1. Export `encrypted_secrets` and `invoice_mappings` grouped by `workspace_id`.
+2. For each workspace, call the `WorkspaceStore` stub (`env.WORKSPACE.get(idFromName(workspaceId))`) to seed tokens and mappings via the `/token` and `/mapping` RPC routes.
+3. Remove the D1 binding once verified.
+
+Dev/local environments can start fresh — no migration needed.
 
 ## Secrets
 
-| Secret                 | Where                                                             |
-| ---------------------- | ----------------------------------------------------------------- |
-| `RF_KEK`               | Secrets Store (production) or `.dev.vars` (local)                 |
-| `ADDON_KEY`            | `wrangler.jsonc` `vars` / `.dev.vars` — served as manifest `key` via `GET /manifest` |
-| Clockify install token | Encrypted in D1 on `INSTALLED` lifecycle                          |
-| RF API token           | Admin enters via `/self-hosted-settings` → encrypted in D1        |
+| Secret                 | Where                                                                |
+| ---------------------- | -------------------------------------------------------------------- |
+| `RF_KEK`               | Secrets Store (production) or `apps/bridge/.dev.vars` (local)        |
+| `ADDON_KEY`            | `apps/bridge/wrangler.jsonc` `vars` / `.dev.vars`                    |
+| Clockify install token | Encrypted in workspace DO on `INSTALLED` lifecycle                   |
+| RF API token           | Admin enters via `/self-hosted-settings` → encrypted in workspace DO |
 
-## Crawling
+## Scripts
 
-`static/robots.txt` disallows all crawlers. This deployment is a Clockify add-on backend (iframes and API routes), not a public marketing site — blocking indexing is intentional.
+| Command            | Description                                   |
+| ------------------ | --------------------------------------------- |
+| `pnpm dev`         | Start bridge dev server                       |
+| `pnpm build`       | Build all packages + bridge                   |
+| `pnpm test`        | Run tests in all workspaces                   |
+| `pnpm db:generate` | Generate DO SQLite migration in `packages/db` |
+| `pnpm gen`         | Regenerate Wrangler types                     |
 
 ## Deploy
 
 ```bash
 pnpm build
-wrangler d1 migrations apply persistence --remote
-wrangler deploy
+wrangler deploy --config apps/bridge/wrangler.jsonc
 ```
 
-## API routes
+The worker entry is [`apps/bridge/src/worker.ts`](apps/bridge/src/worker.ts) — a small hand-written module that re-exports the SvelteKit handler from `.svelte-kit/cloudflare/_worker.js` (generated on `pnpm build`, gitignored) and exports the `WorkspaceStore` Durable Object class.
 
-| Route                    | Purpose                           |
-| ------------------------ | --------------------------------- |
-| `GET /manifest`          | Add-on manifest                   |
-| `POST /lifecycle`        | Install / settings / delete hooks |
-| `POST /api/generate`     | Create + issue RF invoice         |
-| `GET/POST /api/rf-token` | RF API token intake (admin)       |
-| `GET /api/context`       | Non-secret UI defaults            |
+## Package boundaries
 
-## Iframe pages
-
-- `/invoices/action` — create RF invoice (single invoice)
-- `/self-hosted-settings` — RF API token (admin)
-
-## Tests
-
-```bash
-pnpm test
-pnpm lint
-pnpm build
-```
+- **`@clockify-rf-bridge/request-finance`** — rnf_invoice 0.0.3 schemas, API extensions (`attachments`, `paymentOptions`, etc.), typed HTTP only.
+- **`@clockify-rf-bridge/invoice-core`** — state machine; Clockify client injected from bridge.
+- **`@clockify-rf-bridge/workspace-store`** — DO actor + fetch-based RPC client used by bridge routes.

@@ -1,0 +1,23 @@
+{
+	"name": "@clockify-rf-bridge/db",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"types": "./global.d.ts",
+	"exports": {
+		".": "./src/index.ts",
+		"./migrations": "./migrations/index.ts"
+	},
+	"scripts": {
+		"db:generate": "drizzle-kit generate",
+		"test": "vitest --run"
+	},
+	"dependencies": {
+		"drizzle-orm": "0.44.7"
+	},
+	"devDependencies": {
+		"drizzle-kit": "0.31.10",
+		"typescript": "6.0.2",
+		"vitest": "4.1.3"
+	}
+}

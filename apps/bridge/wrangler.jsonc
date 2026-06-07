@@ -1,0 +1,39 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "clockify-rf-bridge",
+	"compatibility_date": "2026-06-06",
+	"compatibility_flags": ["nodejs_als"],
+	"main": "src/worker.ts",
+	"assets": {
+		"binding": "ASSETS",
+		"directory": ".svelte-kit/cloudflare"
+	},
+	"vars": {
+		"ADDON_KEY": "clockify-rf-bridge",
+		"RF_CLIENT_MAPPING_UI": "false"
+	},
+	"observability": {
+		"enabled": true,
+		"head_sampling_rate": 1
+	},
+	"workers_dev": true,
+	"preview_urls": true,
+	"durable_objects": {
+		"bindings": [{ "name": "WORKSPACE", "class_name": "WorkspaceStore" }]
+	},
+	"migrations": [{ "tag": "v1", "new_sqlite_classes": ["WorkspaceStore"] }],
+	"kv_namespaces": [
+		{
+			"binding": "cache",
+			"id": "943a77aa42144c528a5e053155259583"
+		}
+	],
+	"secrets_store_secrets": [
+		{
+			"binding": "KEK",
+			"store_id": "f00c8c56b44e4bdea69203884edbf7ff",
+			"secret_name": "RF_KEK"
+		}
+	],
+	"rules": [{ "type": "Text", "globs": ["**/*.sql"], "fallthrough": true }]
+}

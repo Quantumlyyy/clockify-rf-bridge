@@ -1,0 +1,21 @@
+{
+	"name": "@clockify-rf-bridge/invoice-core",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"test": "vitest --run"
+	},
+	"dependencies": {
+		"@clockify-rf-bridge/db": "workspace:*",
+		"@clockify-rf-bridge/request-finance": "workspace:*",
+		"effect": "3.21.2"
+	},
+	"devDependencies": {
+		"typescript": "6.0.2",
+		"vitest": "4.1.3"
+	}
+}

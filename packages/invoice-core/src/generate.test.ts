@@ -1,0 +1,57 @@
+import { describe, expect, it } from 'vitest';
+import { Effect, Layer } from 'effect';
+import { RequestFinanceClient } from '@clockify-rf-bridge/request-finance';
+import { generateRfInvoice } from './generate';
+import { ClockifyClientTag, InvoiceContextTag, WorkspaceClientTag } from './types';
+
+describe('generateRfInvoice', () => {
+	it('returns cached payment link when mapping exists', async () => {
+		const result = await Effect.runPromise(
+			generateRfInvoice('inv-1', {
+				chain: 'mainnet',
+				settlementCurrencies: ['USDC-mainnet'],
+				receivingWalletAddress: '0xabc'
+			}).pipe(
+				Effect.provide(
+					Layer.mergeAll(
+						Layer.succeed(WorkspaceClientTag, {
+							getMapping: () =>
+								Effect.succeed({
+									clockify_invoice_id: 'inv-1',
+									rf_invoice_id: 'rf-existing',
+									rf_request_id: 'req-1',
+									payment_link: 'https://pay.example/existing'
+								}),
+							insertMapping: () => Effect.void,
+							getRun: () => Effect.succeed(null),
+							upsertRun: () => Effect.void
+						}),
+						Layer.succeed(ClockifyClientTag, {
+							getInstallToken: () => Effect.succeed('tok'),
+							getInvoice: () => Effect.die('unexpected'),
+							exportInvoicePdf: () => Effect.die('unexpected'),
+							updateInvoiceNote: () => Effect.die('unexpected')
+						}),
+						Layer.succeed(InvoiceContextTag, {
+							rfApiKey: 'key',
+							settings: {},
+							noteLinkPrefix: 'Pay: ',
+							buildLineItems: () => [],
+							resolveRfClientId: (_clockifyClientId) => Effect.succeed('rf-client-1')
+						}),
+						Layer.succeed(RequestFinanceClient, {
+							uploadAttachment: () => Effect.die('unexpected'),
+							createInvoice: () => Effect.die('unexpected'),
+							issueInvoice: () => Effect.die('unexpected'),
+							getInvoiceWithLinks: () => Effect.die('unexpected'),
+							listClients: () => Effect.die('unexpected')
+						})
+					)
+				)
+			)
+		);
+
+		expect(result.reused).toBe(true);
+		expect(result.paymentLink).toBe('https://pay.example/existing');
+	});
+});

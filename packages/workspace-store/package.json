@@ -1,0 +1,22 @@
+{
+	"name": "@clockify-rf-bridge/workspace-store",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts",
+		"./do": "./src/do.ts"
+	},
+	"scripts": {
+		"test": "vitest --run"
+	},
+	"dependencies": {
+		"@clockify-rf-bridge/db": "workspace:*",
+		"drizzle-orm": "0.44.7"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "4.20260530.1",
+		"typescript": "6.0.2",
+		"vitest": "4.1.3"
+	}
+}
