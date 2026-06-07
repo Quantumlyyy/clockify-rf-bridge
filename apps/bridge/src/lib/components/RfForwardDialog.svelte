@@ -21,7 +21,7 @@
 	}
 
 	let {
-		open = false,
+		open = $bindable(false),
 		authToken = '',
 		chain = $bindable(''),
 		wallet = $bindable(''),
@@ -111,7 +111,7 @@
 			<p class="hint">Adjust payment options or continue with your workspace defaults.</p>
 
 			{#if !rfConfigured}
-				<p class="warn">Configure the Request Finance API token in add-on settings first.</p>
+				<p class="warn-text">Configure the Request Finance API token in add-on settings first.</p>
 			{/if}
 
 			<fieldset class="currencies">
@@ -126,7 +126,7 @@
 				{#if currenciesLoading}
 					<p class="hint">Loading currencies…</p>
 				{:else if currenciesError}
-					<p class="warn">{currenciesError}</p>
+					<p class="warn-text">{currenciesError}</p>
 				{:else}
 					<div class="currency-grid">
 						{#each visibleCurrencies as currency (currency.id)}
@@ -150,11 +150,11 @@
 			</fieldset>
 
 			{#if chainMismatch}
-				<p class="warn">Selected currencies use different networks — set chain manually below.</p>
+				<p class="warn-text">Selected currencies use different networks — set chain manually below.</p>
 			{/if}
 
-			<label>
-				Chain
+			<label class="field">
+				<span class="label">Chain</span>
 				<input
 					bind:value={chain}
 					placeholder={inferredChain ?? 'e.g. mainnet'}
@@ -162,18 +162,18 @@
 				/>
 			</label>
 
-			<label>
-				Receiving wallet
+			<label class="field">
+				<span class="label">Receiving wallet</span>
 				<input bind:value={wallet} placeholder="0x…" autocomplete="off" />
 			</label>
 
 			<div class="actions">
-				<button type="button" class="secondary" disabled={submitting} onclick={() => oncancel?.()}>
+				<button type="button" class="btn" disabled={submitting} onclick={() => oncancel?.()}>
 					Cancel
 				</button>
 				<button
 					type="button"
-					class="primary"
+					class="btn btn-primary"
 					disabled={submitting || !rfConfigured || currenciesLoading}
 					onclick={handleConfirm}
 				>
@@ -196,7 +196,6 @@
 		z-index: 100;
 	}
 	.dialog {
-		font-family: system-ui, sans-serif;
 		border: none;
 		border-radius: 8px;
 		padding: 1.25rem;
@@ -207,17 +206,8 @@
 		margin: 0;
 		box-shadow: 0 8px 32px rgb(0 0 0 / 20%);
 	}
-	.hint {
-		color: #555;
-		font-size: 0.9rem;
-		margin: 0 0 1rem;
-	}
-	.warn {
-		color: #a60;
-		font-size: 0.9rem;
-	}
 	fieldset {
-		border: 1px solid #ddd;
+		border: 1px solid var(--border);
 		border-radius: 6px;
 		margin: 0 0 1rem;
 		padding: 0.75rem;
@@ -246,38 +236,10 @@
 		font-size: 0.9rem;
 		cursor: pointer;
 	}
-	label {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-		margin-bottom: 0.75rem;
-		font-size: 0.9rem;
-	}
-	input:not([type='checkbox']):not([type='search']) {
-		padding: 0.5rem;
-	}
 	.actions {
 		display: flex;
 		gap: 0.5rem;
 		justify-content: flex-end;
 		margin-top: 0.5rem;
-	}
-	button {
-		padding: 0.5rem 1rem;
-		cursor: pointer;
-		border-radius: 4px;
-		border: 1px solid #ccc;
-	}
-	.primary {
-		background: #111;
-		color: #fff;
-		border-color: #111;
-	}
-	.secondary {
-		background: #fff;
-	}
-	button:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
 	}
 </style>

@@ -1,5 +1,5 @@
 import { verifyClockifyJwtFromRequest } from '$lib/server/auth';
-import { jsonError } from '$lib/server/errors';
+import { BadRequestError, jsonError } from '$lib/server/errors';
 import { generateRfInvoice } from '$lib/server/orchestrate';
 
 export async function POST({ request, platform }: { request: Request; platform: App.Platform }) {
@@ -13,17 +13,17 @@ export async function POST({ request, platform }: { request: Request; platform: 
 		};
 
 		if (!body.invoiceId) {
-			return Response.json({ error: 'invoiceId is required' }, { status: 400 });
+			throw new BadRequestError('invoiceId is required');
 		}
 		if (!body.chain?.trim()) {
-			return Response.json({ error: 'chain is required' }, { status: 400 });
+			throw new BadRequestError('chain is required');
 		}
 		const settlementCurrencies = body.settlementCurrencies?.map((c) => c.trim()).filter(Boolean);
 		if (!settlementCurrencies?.length) {
-			return Response.json({ error: 'settlementCurrencies is required' }, { status: 400 });
+			throw new BadRequestError('settlementCurrencies is required');
 		}
 		if (!body.receivingWalletAddress?.trim()) {
-			return Response.json({ error: 'receivingWalletAddress is required' }, { status: 400 });
+			throw new BadRequestError('receivingWalletAddress is required');
 		}
 
 		const result = await generateRfInvoice(platform.env, claims, body.invoiceId, {

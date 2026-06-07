@@ -1,7 +1,12 @@
 {
 	"name": "clockify-rf-bridge",
 	"private": true,
+	"license": "UNLICENSED",
 	"version": "0.0.1",
+	"packageManager": "pnpm@11.5.2",
+	"engines": {
+		"node": ">=22"
+	},
 	"type": "module",
 	"scripts": {
 		"dev": "pnpm --filter bridge dev",

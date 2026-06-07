@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { resetPublicKeyCacheForTests, setVerificationKeyForTests } from './auth';
 import { CLOCKIFY_JWT_ISSUER, CLOCKIFY_JWT_TYPE } from './config';
 import { handleLifecycle } from './lifecycle';
+import { BadRequestError } from './errors';
 
 vi.mock('@clockify-rf-bridge/workspace-store', () => ({
 	storeEncryptedTokenRow: vi.fn(async () => undefined),
@@ -50,6 +51,20 @@ describe('lifecycle', () => {
 		vi.mocked(storeEncryptedTokenRow).mockClear();
 		vi.mocked(getEncryptedToken).mockReset();
 		vi.unstubAllGlobals();
+	});
+
+	it('INSTALLED without authToken throws BadRequestError', async () => {
+		const pair = await generateKeyPair('RS256');
+		await setVerificationKeyForTests(await exportSPKI(pair.publicKey));
+		const env = { ADDON_KEY } as unknown as Env;
+
+		await expect(
+			handleLifecycle(
+				{ type: 'INSTALLED', workspaceId: 'ws-1' },
+				await lifecycleToken(pair.privateKey),
+				env
+			)
+		).rejects.toBeInstanceOf(BadRequestError);
 	});
 
 	it('INSTALLED stores encrypted install token via workspace store', async () => {

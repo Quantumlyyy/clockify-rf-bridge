@@ -36,7 +36,10 @@ async function importAesKey(env: Env): Promise<CryptoKey> {
 	if (raw.length !== 32) {
 		throw new Error('KEK must be 32 bytes');
 	}
-	return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+	return crypto.subtle.importKey('raw', raw as BufferSource, { name: 'AES-GCM' }, false, [
+		'encrypt',
+		'decrypt'
+	]);
 }
 
 function workspaceAad(workspaceId: string): Uint8Array {
@@ -52,7 +55,11 @@ export async function encryptSecret(
 	const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
 	const encoded = new TextEncoder().encode(plaintext);
 	const ciphertext = await crypto.subtle.encrypt(
-		{ name: 'AES-GCM', iv, additionalData: workspaceAad(workspaceId) },
+		{
+			name: 'AES-GCM',
+			iv: iv as BufferSource,
+			additionalData: workspaceAad(workspaceId) as BufferSource
+		},
 		key,
 		encoded
 	);
@@ -75,11 +82,11 @@ export async function decryptSecret(
 	const decrypted = await crypto.subtle.decrypt(
 		{
 			name: 'AES-GCM',
-			iv: blob.iv,
-			additionalData: workspaceAad(workspaceId)
+			iv: blob.iv as BufferSource,
+			additionalData: workspaceAad(workspaceId) as BufferSource
 		},
 		key,
-		blob.ciphertext
+		blob.ciphertext as BufferSource
 	);
 	return new TextDecoder().decode(decrypted);
 }

@@ -1,6 +1,7 @@
 import { deleteClientMappings } from '@clockify-rf-bridge/workspace-store';
 import { verifyClockifyJwt } from './auth';
 import { getInstallToken } from './clients/clockify';
+import { BadRequestError } from './errors';
 import {
 	deleteWorkspaceMappingsForWorkspace,
 	deleteWorkspaceSecretsForWorkspace,
@@ -25,7 +26,7 @@ export async function handleLifecycle(
 	switch (payload.type) {
 		case 'INSTALLED': {
 			if (!payload.authToken) {
-				throw new Error('INSTALLED lifecycle missing authToken');
+				throw new BadRequestError('INSTALLED lifecycle missing authToken');
 			}
 			await storeEncryptedToken(env, payload.workspaceId, 'clockify_install', payload.authToken);
 			break;

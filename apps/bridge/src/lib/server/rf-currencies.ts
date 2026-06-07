@@ -1,5 +1,6 @@
 import type { RfCurrency } from '$lib/rf-currencies';
-import { RF_API_BASE, RF_CURRENCIES_CACHE_KEY, RF_CURRENCIES_CACHE_TTL_SECONDS } from './config';
+import { RF_API_BASE } from '@clockify-rf-bridge/request-finance';
+import { RF_CURRENCIES_CACHE_KEY, RF_CURRENCIES_CACHE_TTL_SECONDS } from './config';
 
 export interface RfCurrencyApiItem {
 	id: string;

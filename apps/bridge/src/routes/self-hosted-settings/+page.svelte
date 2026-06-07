@@ -64,42 +64,18 @@
 	});
 </script>
 
-<main>
+<main class="page page-narrow">
 	<h1>Request Finance API token</h1>
 	{#if loading}
 		<p>Loading…</p>
 	{:else if configured}
-		<p class="status">Token is configured. Enter a new value below to replace it.</p>
+		<p class="status-success">Token is configured. Enter a new value below to replace it.</p>
 	{/if}
-	<label>
-		API token
+	<label class="field">
+		<span class="label">API token</span>
 		<input type="password" bind:value={tokenInput} autocomplete="off" placeholder="RF API key" />
 	</label>
-	<button type="button" disabled={saving} onclick={saveToken}>
+	<button type="button" class="btn btn-primary" disabled={saving} onclick={saveToken}>
 		{saving ? 'Saving…' : 'Save token'}
 	</button>
 </main>
-
-<style>
-	main {
-		font-family: system-ui, sans-serif;
-		padding: 1rem;
-		max-width: 28rem;
-	}
-	label {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-		margin: 1rem 0;
-	}
-	input {
-		padding: 0.5rem;
-	}
-	button {
-		padding: 0.5rem 1rem;
-		cursor: pointer;
-	}
-	.status {
-		color: #0a0;
-	}
-</style>

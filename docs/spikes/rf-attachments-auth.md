@@ -1,5 +1,9 @@
 # Spike B — RF `POST /invoices/attachments` auth
 
+**Why this exists:** RF attachment upload docs were unclear about which headers a server-side Worker needs vs. what the browser sends.
+
+**Conclusion:** A raw API key in `Authorization` (no `Bearer` prefix) is enough from Workers. Do not set `Content-Type` manually — let `fetch` set the multipart boundary.
+
 **Status:** Resolved for API-key server-side use (Workers orchestration).
 
 ## Endpoint

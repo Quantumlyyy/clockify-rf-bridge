@@ -1,18 +1,20 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { chainForSelectedCurrencies, type RfCurrency } from '$lib/rf-currencies';
 
-describe('invoices action page', () => {
-	it('reads invoiceId from query params', () => {
-		const params = new URLSearchParams('auth_token=x&invoiceId=inv-123');
-		expect(params.get('invoiceId')).toBe('inv-123');
+const FIXTURE: RfCurrency[] = [
+	{ id: 'USDC-mainnet', chain: 'mainnet', label: 'USDC — mainnet' },
+	{ id: 'USDC-matic', chain: 'matic', label: 'USDC — matic' }
+];
+
+describe('RfForwardDialog chain logic', () => {
+	it('detects chain mismatch when currencies span networks', () => {
+		const selected = ['USDC-mainnet', 'USDC-matic'];
+		const inferred = chainForSelectedCurrencies(selected, FIXTURE);
+		expect(inferred).toBeNull();
 	});
 
-	it('postMessage contract for success toast', () => {
-		const postMessage = vi.fn();
-		const top = { postMessage };
-		top.postMessage({ type: 'toastrPop', level: 'success', message: 'ok' }, '*');
-		expect(postMessage).toHaveBeenCalledWith(
-			{ type: 'toastrPop', level: 'success', message: 'ok' },
-			'*'
-		);
+	it('allows confirm when a single network is selected', () => {
+		const selected = ['USDC-mainnet'];
+		expect(chainForSelectedCurrencies(selected, FIXTURE)).toBe('mainnet');
 	});
 });

@@ -18,13 +18,3 @@ export function chainForSelectedCurrencies(ids: string[], currencies: RfCurrency
 	if (chains.size === 1) return [...chains][0] as string;
 	return null;
 }
-
-export function resolveChain(
-	chainInput: string,
-	currencyIds: string[],
-	currencies: RfCurrency[]
-): string | null {
-	const trimmed = chainInput.trim();
-	if (trimmed) return trimmed;
-	return chainForSelectedCurrencies(currencyIds, currencies);
-}

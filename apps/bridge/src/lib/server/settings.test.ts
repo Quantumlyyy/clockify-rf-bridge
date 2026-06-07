@@ -13,7 +13,7 @@ vi.mock('@clockify-rf-bridge/workspace-store', () => ({
 
 import { getClientMapping, upsertClientMappings } from '@clockify-rf-bridge/workspace-store';
 
-const env = { RF_CLIENT_MAPPING_UI: 'false' } as Env;
+const env = { RF_CLIENT_MAPPING_UI: 'false' } as unknown as Env;
 
 describe('normalizeWorkspaceSettings', () => {
 	it('parses clientMap JSON and comma-separated currencies', () => {
@@ -28,8 +28,12 @@ describe('normalizeWorkspaceSettings', () => {
 
 describe('isRfClientMappingUiEnabled', () => {
 	it('is true only when env flag is true', () => {
-		expect(isRfClientMappingUiEnabled({ RF_CLIENT_MAPPING_UI: 'true' } as Env)).toBe(true);
-		expect(isRfClientMappingUiEnabled({ RF_CLIENT_MAPPING_UI: 'false' } as Env)).toBe(false);
+		expect(isRfClientMappingUiEnabled({ RF_CLIENT_MAPPING_UI: 'true' } as unknown as Env)).toBe(
+			true
+		);
+		expect(isRfClientMappingUiEnabled({ RF_CLIENT_MAPPING_UI: 'false' } as unknown as Env)).toBe(
+			false
+		);
 	});
 });
 

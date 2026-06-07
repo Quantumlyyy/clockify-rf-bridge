@@ -142,7 +142,7 @@
 	});
 </script>
 
-<main>
+<main class="page page-wide">
 	<h1>Client mapping</h1>
 	<p class="intro">
 		Map each Clockify client to a Request Finance client used when creating invoices.
@@ -158,7 +158,7 @@
 			mappings below are still used for invoice generation.
 		</p>
 	{:else if !rfClientsAvailable}
-		<p class="banner warn">
+		<p class="banner banner-warning">
 			RF client picker unavailable: {rfClientsReason} Enter RF client IDs manually for now.
 		</p>
 	{/if}
@@ -166,7 +166,7 @@
 	{#if rows.length === 0}
 		<p>No Clockify clients found in this workspace.</p>
 	{:else}
-		<table>
+		<table class="data-table">
 			<thead>
 				<tr>
 					<th>Clockify client</th>
@@ -207,57 +207,9 @@
 		</table>
 
 		{#if uiEnabled}
-			<button type="button" disabled={saving} onclick={save}>
+			<button type="button" class="btn btn-primary" disabled={saving} onclick={save}>
 				{saving ? 'Saving…' : 'Save mappings'}
 			</button>
 		{/if}
 	{/if}
 </main>
-
-<style>
-	main {
-		font-family: system-ui, sans-serif;
-		padding: 1rem;
-		max-width: 52rem;
-	}
-	.intro {
-		color: #444;
-	}
-	.banner {
-		background: #f5f5f5;
-		border-left: 3px solid #666;
-		padding: 0.75rem 1rem;
-		margin: 1rem 0;
-		font-size: 0.95rem;
-	}
-	.banner.warn {
-		border-left-color: #c80;
-		background: #fff8e6;
-	}
-	table {
-		width: 100%;
-		border-collapse: collapse;
-		margin: 1rem 0;
-	}
-	th,
-	td {
-		text-align: left;
-		padding: 0.5rem;
-		border-bottom: 1px solid #ddd;
-		vertical-align: top;
-	}
-	.muted {
-		font-size: 0.85rem;
-		color: #666;
-	}
-	select,
-	input {
-		width: 100%;
-		padding: 0.4rem;
-		box-sizing: border-box;
-	}
-	button {
-		padding: 0.5rem 1rem;
-		cursor: pointer;
-	}
-</style>

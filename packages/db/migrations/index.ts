@@ -1,4 +1,4 @@
-/// <reference path="./sql.d.ts" />
+import './sql.d.ts';
 import journal from './meta/_journal.json';
 import m0000 from './0000_init.sql';
 import m0001 from './0001_client_mappings.sql';

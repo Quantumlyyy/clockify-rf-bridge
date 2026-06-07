@@ -5,11 +5,6 @@ export { CLOCKIFY_JWT_PUBLIC_KEY_PEM };
 export const CLOCKIFY_JWT_ISSUER = 'clockify';
 export const CLOCKIFY_JWT_TYPE = 'addon';
 
-export const RF_API_BASE = 'https://api.request.finance';
-
-export const JWKS_CACHE_KEY = 'clockify:jwt:public-key';
-export const JWKS_CACHE_TTL_SECONDS = 86400;
-
 export const RF_CURRENCIES_CACHE_KEY = 'rf:invoicing-currencies';
 export const RF_CURRENCIES_CACHE_TTL_SECONDS = 86400;
 

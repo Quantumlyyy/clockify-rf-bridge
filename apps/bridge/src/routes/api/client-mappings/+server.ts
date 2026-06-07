@@ -1,6 +1,6 @@
 import { verifyClockifyJwtFromRequest, requireAdmin } from '$lib/server/auth';
 import { listClientMappings, upsertClientMappings } from '@clockify-rf-bridge/workspace-store';
-import { jsonError } from '$lib/server/errors';
+import { BadRequestError, ForbiddenError, jsonError } from '$lib/server/errors';
 import { isRfClientMappingUiEnabled } from '$lib/server/settings';
 
 export async function GET({ request, platform }: { request: Request; platform: App.Platform }) {
@@ -23,12 +23,8 @@ export async function PUT({ request, platform }: { request: Request; platform: A
 		requireAdmin(claims);
 
 		if (!isRfClientMappingUiEnabled(platform.env)) {
-			return Response.json(
-				{
-					error:
-						'Client mapping UI is disabled. Set RF_CLIENT_MAPPING_UI=true after RF OAuth /clients access is granted.'
-				},
-				{ status: 403 }
+			throw new ForbiddenError(
+				'Client mapping UI is disabled. Set RF_CLIENT_MAPPING_UI=true after RF OAuth /clients access is granted.'
 			);
 		}
 
@@ -42,15 +38,12 @@ export async function PUT({ request, platform }: { request: Request; platform: A
 		};
 
 		if (!Array.isArray(body.mappings)) {
-			return Response.json({ error: 'mappings array is required' }, { status: 400 });
+			throw new BadRequestError('mappings array is required');
 		}
 
 		for (const row of body.mappings) {
 			if (!row.clockify_client_id?.trim() || !row.rf_client_id?.trim()) {
-				return Response.json(
-					{ error: 'Each mapping requires clockify_client_id and rf_client_id' },
-					{ status: 400 }
-				);
+				throw new BadRequestError('Each mapping requires clockify_client_id and rf_client_id');
 			}
 		}
 

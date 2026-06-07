@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, afterEach } from 'vitest';
-import { Effect } from 'effect';
+import { Effect, Exit } from 'effect';
 import { RequestFinanceClient, RequestFinanceClientLive } from './client';
 import type { CreateInvoiceRequest } from './schema/api';
 
@@ -65,5 +65,48 @@ describe('request-finance client', () => {
 		expect(res.id).toBe('rf-1');
 		const sent = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
 		expect(sent.meta.format).toBe('rnf_invoice');
+	});
+
+	it('issues invoice and parses payment link', async () => {
+		const fetchMock = vi.fn().mockResolvedValue(
+			new Response(
+				JSON.stringify({
+					requestId: 'req-1',
+					invoiceLinks: { signUpAndPay: 'https://pay.example/issue' }
+				}),
+				{ status: 200 }
+			)
+		);
+		vi.stubGlobal('fetch', fetchMock);
+
+		const res = await run(
+			Effect.gen(function* () {
+				const rf = yield* RequestFinanceClient;
+				return yield* rf.issueInvoice('api-key', 'rf-99');
+			})
+		);
+
+		expect(res.invoiceLinks?.signUpAndPay).toBe('https://pay.example/issue');
+		expect(String(fetchMock.mock.calls[0][0])).toContain('/invoices/rf-99');
+	});
+
+	it('maps RF HTTP errors to RfHttpError', async () => {
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValue(new Response('bad request', { status: 400, statusText: 'Bad Request' }));
+		vi.stubGlobal('fetch', fetchMock);
+
+		const exit = await Effect.runPromiseExit(
+			Effect.gen(function* () {
+				const rf = yield* RequestFinanceClient;
+				return yield* rf.issueInvoice('api-key', 'rf-bad');
+			}).pipe(Effect.provide(RequestFinanceClientLive))
+		);
+
+		expect(Exit.isFailure(exit)).toBe(true);
+		if (Exit.isFailure(exit)) {
+			const error = exit.cause;
+			expect(String(error)).toContain('RfHttpError');
+		}
 	});
 });

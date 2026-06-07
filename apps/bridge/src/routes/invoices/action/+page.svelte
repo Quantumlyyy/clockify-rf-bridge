@@ -117,13 +117,13 @@
 	});
 </script>
 
-<main>
+<main class="page">
 	{#if loading}
 		<p>Loading…</p>
 	{:else if !invoiceId}
-		<p class="error">No invoice selected.</p>
+		<p class="warn-text">No invoice selected.</p>
 	{:else}
-		<p class="idle">Preparing Request Finance export…</p>
+		<p class="hint">Preparing Request Finance export…</p>
 	{/if}
 </main>
 
@@ -141,17 +141,3 @@
 		toastrPop('info', 'Cancelled');
 	}}
 />
-
-<style>
-	main {
-		font-family: system-ui, sans-serif;
-		padding: 1rem;
-	}
-	.error {
-		color: #c00;
-	}
-	.idle {
-		color: #666;
-		font-size: 0.9rem;
-	}
-</style>

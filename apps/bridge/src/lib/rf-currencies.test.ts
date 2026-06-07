@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { chainForSelectedCurrencies, resolveChain, type RfCurrency } from './rf-currencies';
+import { chainForSelectedCurrencies, type RfCurrency } from './rf-currencies';
 
 const FIXTURE: RfCurrency[] = [
 	{ id: 'USDC-mainnet', chain: 'mainnet', label: 'USDC — mainnet' },
@@ -14,9 +14,5 @@ describe('rf-currencies', () => {
 
 	it('returns null when currencies span networks', () => {
 		expect(chainForSelectedCurrencies(['USDC-mainnet', 'USDC-matic'], FIXTURE)).toBeNull();
-	});
-
-	it('resolveChain prefers explicit input', () => {
-		expect(resolveChain('custom', ['USDC-mainnet'], FIXTURE)).toBe('custom');
 	});
 });

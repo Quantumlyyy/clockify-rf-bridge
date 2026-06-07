@@ -54,14 +54,16 @@ export async function loadWorkspaceSettings(
 }
 
 export function isRfClientMappingUiEnabled(env: Env): boolean {
-	return env.RF_CLIENT_MAPPING_UI === 'true' || env.RF_CLIENT_MAPPING_UI === true;
+	return String(env.RF_CLIENT_MAPPING_UI).toLowerCase() === 'true';
 }
 
 function legacyRfClientId(
 	settings: WorkspaceSettings,
 	clockifyClientId: string
 ): string | undefined {
-	const entry = settings.clientMap?.[clockifyClientId];
+	const clientMap = settings.clientMap;
+	if (!clientMap || typeof clientMap === 'string') return undefined;
+	const entry = clientMap[clockifyClientId];
 	return entry?.rfClientId;
 }
 

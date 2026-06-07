@@ -1,8 +1,0 @@
-# Copy to .dev.vars for local wrangler dev (never commit .dev.vars).
-#
-# Add-on key from Clockify marketplace — used as JWT `sub` claim check.
-ADDON_KEY=your-addon-key-here
-
-# 32-byte AES-256 KEK as 64-char hex (throwaway for local dev only).
-# Generate: openssl rand -hex 32
-RF_KEK=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef

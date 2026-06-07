@@ -1,6 +1,6 @@
 import { requireAdmin, verifyClockifyJwtFromRequest } from '$lib/server/auth';
 import { hasEncryptedToken, storeEncryptedToken } from '$lib/server/workspace/tokens';
-import { jsonError } from '$lib/server/errors';
+import { BadRequestError, jsonError } from '$lib/server/errors';
 
 export async function GET({ request, platform }: { request: Request; platform: App.Platform }) {
 	try {
@@ -20,7 +20,7 @@ export async function POST({ request, platform }: { request: Request; platform: 
 
 		const body = (await request.json()) as { token?: string };
 		if (!body.token?.trim()) {
-			return Response.json({ error: 'Token is required' }, { status: 400 });
+			throw new BadRequestError('Token is required');
 		}
 
 		await storeEncryptedToken(platform.env, claims.workspaceId, 'rf_api', body.token.trim());

@@ -13,6 +13,7 @@ import {
 import { RequestFinanceClientLive } from '@clockify-rf-bridge/request-finance';
 import { getMapping, getRun, insertMapping, upsertRun } from '@clockify-rf-bridge/workspace-store';
 import type { ClockifyClaims } from './auth';
+import type { ClockifyInvoice as BridgeClockifyInvoice } from './types/clockify';
 import {
 	exportInvoicePdf,
 	getInstallToken,
@@ -93,7 +94,7 @@ export async function generateRfInvoice(
 		rfApiKey,
 		settings,
 		noteLinkPrefix: NOTE_LINK_PREFIX,
-		buildLineItems: buildRfLineItems,
+		buildLineItems: (invoice) => buildRfLineItems(invoice as unknown as BridgeClockifyInvoice),
 		resolveRfClientId: (clockifyClientId) =>
 			Effect.tryPromise({
 				try: () => resolveRfClientId(env, workspaceId, settings, clockifyClientId),
@@ -104,18 +105,11 @@ export async function generateRfInvoice(
 			})
 	});
 
-	try {
-		return await Effect.runPromise(
-			generateCore(invoiceId, overrides).pipe(
-				Effect.provide(
-					Layer.mergeAll(workspaceLayer, clockifyLayer, contextLayer, RequestFinanceClientLive)
-				)
+	return await Effect.runPromise(
+		generateCore(invoiceId, overrides).pipe(
+			Effect.provide(
+				Layer.mergeAll(workspaceLayer, clockifyLayer, contextLayer, RequestFinanceClientLive)
 			)
-		);
-	} catch (error) {
-		if (error instanceof ValidationError) {
-			throw new BadRequestError(error.message);
-		}
-		throw error;
-	}
+		)
+	);
 }

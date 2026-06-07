@@ -1,5 +1,9 @@
 # Spike A — Invoice id in `invoices.action` iframe
 
+**Why this exists:** We needed to know how Clockify passes the current invoice into the add-on action page before building the "Send to Request Finance" flow.
+
+**Conclusion:** The invoice id comes from the URL query string (`invoiceId`), not from `postMessage`. Bulk `invoiceIds` is out of scope for now.
+
 **Status:** Documented convention + stub probe page deployed.
 
 ## Query parameters (Clockify add-on iframe)
