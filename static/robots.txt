@@ -1,3 +1,3 @@
-# allow crawling everything by default
+# Clockify add-on backend (iframe/API only) — not a public site; block all crawlers.
 User-agent: *
-Disallow:
+Disallow: /

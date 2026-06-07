@@ -2,13 +2,18 @@
 	"$schema": "./node_modules/wrangler/config-schema.json",
 	"name": "clockify-rf-bridge",
 	"compatibility_date": "2026-06-06",
-	"compatibility_flags": [
-		"nodejs_als"
-	],
+	"compatibility_flags": ["nodejs_als"],
 	"main": ".svelte-kit/cloudflare/_worker.js",
 	"assets": {
 		"binding": "ASSETS",
 		"directory": ".svelte-kit/cloudflare"
+	},
+	"vars": {
+		"ADDON_KEY": "clockify-rf-bridge"
+	},
+	"observability": {
+		"enabled": true,
+		"head_sampling_rate": 1
 	},
 	"workers_dev": true,
 	"preview_urls": true,
@@ -16,7 +21,8 @@
 		{
 			"binding": "persistence",
 			"database_name": "clockify-rf-bridge",
-			"database_id": "18869418-d300-44ed-9b1e-af3a36937901"
+			"database_id": "18869418-d300-44ed-9b1e-af3a36937901",
+			"migrations_dir": "migrations"
 		}
 	],
 	"kv_namespaces": [
