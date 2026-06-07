@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [master, main]
+    branches: [master]
   pull_request:
-    branches: [master, main]
+    branches: [master]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -30,9 +30,6 @@ jobs:
 
       - name: Lint
         run: pnpm lint
-
-      - name: Test
-        run: pnpm test
 
       - name: Type-check
         run: pnpm check

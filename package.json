@@ -18,6 +18,7 @@
 		"lint": "oxfmt --check && oxlint && eslint .",
 		"format": "oxfmt",
 		"test": "pnpm -r test",
+		"test:ci": "pnpm -r --if-present run test:ci",
 		"gen": "pnpm --filter bridge gen",
 		"db:generate": "pnpm --filter @clockify-rf-bridge/db db:generate"
 	},

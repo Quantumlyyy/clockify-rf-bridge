@@ -1,0 +1,32 @@
+comment:
+  layout: 'header, diff, flags, components'
+
+component_management:
+  default_rules:
+    statuses:
+      - type: project
+        target: auto
+        threshold: 1%
+      - type: patch
+        target: auto
+  individual_components:
+    - component_id: bridge
+      name: bridge
+      paths:
+        - apps/bridge/**
+    - component_id: db
+      name: db
+      paths:
+        - packages/db/**
+    - component_id: invoice_core
+      name: invoice-core
+      paths:
+        - packages/invoice-core/**
+    - component_id: request_finance
+      name: request-finance
+      paths:
+        - packages/request-finance/**
+    - component_id: workspace_store
+      name: workspace-store
+      paths:
+        - packages/workspace-store/**

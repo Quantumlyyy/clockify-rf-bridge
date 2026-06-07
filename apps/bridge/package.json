@@ -11,6 +11,7 @@
 		"check": "wrangler types --check && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test": "vitest --run",
+		"test:ci": "vitest --run --coverage",
 		"test:unit": "vitest",
 		"gen": "wrangler types"
 	},
@@ -25,11 +26,13 @@
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "catalog:",
+		"@codecov/sveltekit-plugin": "catalog:",
 		"@sveltejs/adapter-cloudflare": "catalog:",
 		"@sveltejs/kit": "catalog:",
 		"@sveltejs/vite-plugin-svelte": "catalog:",
 		"@types/node": "catalog:",
 		"@vitest/browser-playwright": "catalog:",
+		"@vitest/coverage-v8": "catalog:",
 		"playwright": "catalog:",
 		"svelte": "catalog:",
 		"svelte-check": "catalog:",

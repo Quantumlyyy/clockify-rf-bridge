@@ -1,11 +1,28 @@
-import { defineConfig } from 'vitest/config';
-import { playwright } from '@vitest/browser-playwright';
+import { codecovSvelteKitPlugin } from '@codecov/sveltekit-plugin';
 import { sveltekit } from '@sveltejs/kit/vite';
+import { playwright } from '@vitest/browser-playwright';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-	plugins: [sveltekit()],
+	plugins: [
+		sveltekit(),
+		codecovSvelteKitPlugin({
+			enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
+			bundleName: 'bridge',
+			uploadToken: process.env.CODECOV_TOKEN
+		})
+	],
 	test: {
 		expect: { requireAssertions: true },
+		coverage: {
+			provider: 'v8',
+			reporter: ['text', 'lcov'],
+			reportsDirectory: './coverage'
+		},
+		...(process.env.CI && {
+			reporters: ['default', 'junit'],
+			outputFile: './test-results/junit.xml'
+		}),
 		projects: [
 			{
 				extends: './vite.config.ts',

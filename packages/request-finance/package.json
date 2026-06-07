@@ -7,12 +7,14 @@
 		".": "./src/index.ts"
 	},
 	"scripts": {
-		"test": "vitest --run"
+		"test": "vitest --run",
+		"test:ci": "vitest --run --coverage"
 	},
 	"dependencies": {
 		"effect": "catalog:"
 	},
 	"devDependencies": {
+		"@vitest/coverage-v8": "catalog:",
 		"typescript": "catalog:",
 		"vitest": "catalog:"
 	}

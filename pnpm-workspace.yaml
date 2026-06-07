@@ -23,6 +23,7 @@ catalogMode: strict
 
 catalog:
   '@changesets/cli': 2.31.0
+  '@codecov/sveltekit-plugin': 2.0.1
   '@cloudflare/workers-types': 4.20260530.1
   '@eslint/compat': 2.0.4
   '@eslint/js': 10.0.1
@@ -31,6 +32,7 @@ catalog:
   '@sveltejs/vite-plugin-svelte': 7.0.0
   '@types/node': 24.0.3
   '@vitest/browser-playwright': 4.1.7
+  '@vitest/coverage-v8': 4.1.7
   drizzle-kit: 0.31.10
   drizzle-orm: 0.45.2
   effect: 3.21.2
