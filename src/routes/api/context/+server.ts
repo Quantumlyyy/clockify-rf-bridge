@@ -1,5 +1,6 @@
 import { verifyClockifyJwtFromRequest } from '$lib/server/auth';
 import { getInstallToken } from '$lib/server/clients/clockify';
+import { getDb } from '$lib/server/db/index';
 import { hasEncryptedToken } from '$lib/server/db/tokens';
 import { jsonError } from '$lib/server/errors';
 import { loadWorkspaceSettings } from '$lib/server/settings';
@@ -7,22 +8,15 @@ import { loadWorkspaceSettings } from '$lib/server/settings';
 export async function GET({ request, platform }: { request: Request; platform: App.Platform }) {
 	try {
 		const claims = await verifyClockifyJwtFromRequest(request, platform.env);
-		const installToken = await getInstallToken(
-			platform.env.persistence,
-			claims.workspaceId,
-			platform.env
-		);
+		const db = getDb(platform.env);
+		const installToken = await getInstallToken(db, claims.workspaceId, platform.env);
 		const settings = await loadWorkspaceSettings(
 			claims.backendUrl,
 			claims.workspaceId,
 			installToken,
 			platform.env
 		);
-		const rfConfigured = await hasEncryptedToken(
-			platform.env.persistence,
-			claims.workspaceId,
-			'rf_api'
-		);
+		const rfConfigured = await hasEncryptedToken(db, claims.workspaceId, 'rf_api');
 
 		return Response.json({
 			rfConfigured,

@@ -1,54 +1,56 @@
-import type { InvoiceMappingRow } from './schema';
-import { TABLES } from './schema';
+import { and, eq } from 'drizzle-orm';
+import type { Db } from './index';
+import {
+	invoiceMappings,
+	toInvoiceMapping,
+	type InvoiceMapping,
+	type InvoiceMappingRow
+} from './schema';
 
 export async function getMapping(
-	db: D1Database,
+	db: Db,
 	workspaceId: string,
 	clockifyInvoiceId: string
-): Promise<InvoiceMappingRow | null> {
-	return db
-		.prepare(
-			`SELECT workspace_id, clockify_invoice_id, rf_invoice_id, rf_request_id, payment_link, created_at
-       FROM ${TABLES.invoiceMappings}
-       WHERE workspace_id = ? AND clockify_invoice_id = ?`
+): Promise<InvoiceMapping | null> {
+	const row = await db
+		.select()
+		.from(invoiceMappings)
+		.where(
+			and(
+				eq(invoiceMappings.workspaceId, workspaceId),
+				eq(invoiceMappings.clockifyInvoiceId, clockifyInvoiceId)
+			)
 		)
-		.bind(workspaceId, clockifyInvoiceId)
-		.first<InvoiceMappingRow>();
+		.get();
+
+	return row ? toInvoiceMapping(row) : null;
 }
 
 export async function insertMapping(
-	db: D1Database,
-	mapping: Omit<InvoiceMappingRow, 'created_at'> & { created_at?: string }
-): Promise<InvoiceMappingRow> {
+	db: Db,
+	mapping: Omit<InvoiceMapping, 'created_at'> & { created_at?: string }
+): Promise<InvoiceMapping> {
 	const existing = await getMapping(db, mapping.workspace_id, mapping.clockify_invoice_id);
 	if (existing) return existing;
 
-	const created_at = mapping.created_at ?? new Date().toISOString();
-	await db
-		.prepare(
-			`INSERT INTO ${TABLES.invoiceMappings}
-       (workspace_id, clockify_invoice_id, rf_invoice_id, rf_request_id, payment_link, created_at)
-       VALUES (?, ?, ?, ?, ?, ?)`
-		)
-		.bind(
-			mapping.workspace_id,
-			mapping.clockify_invoice_id,
-			mapping.rf_invoice_id,
-			mapping.rf_request_id,
-			mapping.payment_link,
-			created_at
-		)
-		.run();
+	const createdAt = mapping.created_at ?? new Date().toISOString();
+	await db.insert(invoiceMappings).values({
+		workspaceId: mapping.workspace_id,
+		clockifyInvoiceId: mapping.clockify_invoice_id,
+		rfInvoiceId: mapping.rf_invoice_id,
+		rfRequestId: mapping.rf_request_id,
+		paymentLink: mapping.payment_link,
+		createdAt
+	});
 
 	return {
 		...mapping,
-		created_at
+		created_at: createdAt
 	};
 }
 
-export async function deleteWorkspaceMappings(db: D1Database, workspaceId: string): Promise<void> {
-	await db
-		.prepare(`DELETE FROM ${TABLES.invoiceMappings} WHERE workspace_id = ?`)
-		.bind(workspaceId)
-		.run();
+export async function deleteWorkspaceMappings(db: Db, workspaceId: string): Promise<void> {
+	await db.delete(invoiceMappings).where(eq(invoiceMappings.workspaceId, workspaceId));
 }
+
+export type { InvoiceMappingRow };

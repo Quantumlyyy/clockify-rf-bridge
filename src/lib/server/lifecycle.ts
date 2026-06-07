@@ -1,6 +1,7 @@
 import { verifyClockifyJwt } from './auth';
-import { storeEncryptedToken, deleteWorkspaceSecrets } from './db/tokens';
 import { deleteWorkspaceMappings } from './db/idempotency';
+import { getDb } from './db/index';
+import { storeEncryptedToken, deleteWorkspaceSecrets } from './db/tokens';
 
 export interface LifecyclePayload {
 	type: 'INSTALLED' | 'SETTINGS_UPDATED' | 'DELETED';
@@ -15,6 +16,7 @@ export async function handleLifecycle(
 	env: Env
 ): Promise<void> {
 	await verifyClockifyJwt(lifecycleToken, env);
+	const db = getDb(env);
 
 	switch (payload.type) {
 		case 'INSTALLED': {
@@ -22,7 +24,7 @@ export async function handleLifecycle(
 				throw new Error('INSTALLED lifecycle missing authToken');
 			}
 			await storeEncryptedToken(
-				env.persistence,
+				db,
 				payload.workspaceId,
 				'clockify_install',
 				payload.authToken,
@@ -35,8 +37,8 @@ export async function handleLifecycle(
 			break;
 		}
 		case 'DELETED': {
-			await deleteWorkspaceSecrets(env.persistence, payload.workspaceId);
-			await deleteWorkspaceMappings(env.persistence, payload.workspaceId);
+			await deleteWorkspaceSecrets(db, payload.workspaceId);
+			await deleteWorkspaceMappings(db, payload.workspaceId);
 			await env.cache.delete(`settings:${payload.workspaceId}`);
 			break;
 		}

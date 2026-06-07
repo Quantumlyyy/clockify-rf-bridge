@@ -5,8 +5,8 @@ Cloudflare Workers add-on that creates a Request Finance USDC crypto invoice fro
 ## Stack
 
 - SvelteKit + `@sveltejs/adapter-cloudflare`
-- D1 (`persistence`), KV (`cache`), Secrets Store (`KEK` → `RF_KEK`)
-- Runtime dependency: `jose` (JWT verification)
+- D1 (`persistence`) via Drizzle ORM, KV (`cache`), Secrets Store (`KEK` → `RF_KEK`)
+- Runtime dependencies: `drizzle-orm`, `jose` (JWT verification)
 
 ## Local development
 
@@ -21,6 +21,23 @@ pnpm dev
 ```
 
 Manifest URL (local): `http://localhost:5173/manifest`
+
+## Database
+
+Schema is defined in [`src/lib/server/db/schema.ts`](src/lib/server/db/schema.ts) using Drizzle ORM. Migrations live in [`migrations/`](migrations/) and are applied with Wrangler:
+
+```bash
+wrangler d1 migrations apply persistence --local   # dev
+wrangler d1 migrations apply persistence --remote  # production
+```
+
+After changing the schema, generate a new migration:
+
+```bash
+pnpm db:generate
+```
+
+For quick local schema iteration (without migration files), `pnpm db:push` pushes directly to a remote D1 via the HTTP API. It requires `.env` vars: `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_DATABASE_ID`, `CLOUDFLARE_D1_TOKEN`.
 
 ## Secrets
 

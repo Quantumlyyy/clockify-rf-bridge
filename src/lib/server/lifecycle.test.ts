@@ -1,10 +1,20 @@
 import { exportSPKI, generateKeyPair, SignJWT } from 'jose';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { resetPublicKeyCacheForTests, setVerificationKeyForTests } from './auth';
 import { CLOCKIFY_JWT_ISSUER, CLOCKIFY_JWT_TYPE } from './config';
 import { handleLifecycle } from './lifecycle';
-import { createD1Mock } from './db/d1-mock';
+import type { Db } from './db/index';
+import { getDb } from './db/index';
 import { getEncryptedToken } from './db/tokens';
+import { createTestDb } from './db/test-db';
+
+vi.mock('./db/index', async (importOriginal) => {
+	const actual = await importOriginal<typeof import('./db/index')>();
+	return {
+		...actual,
+		getDb: vi.fn()
+	};
+});
 
 const TEST_KEK = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
 const ADDON_KEY = 'clockify-rf-bridge';
@@ -25,14 +35,16 @@ async function lifecycleToken(privateKey: CryptoKey): Promise<string> {
 describe('lifecycle', () => {
 	afterEach(() => {
 		resetPublicKeyCacheForTests();
+		vi.mocked(getDb).mockReset();
 	});
 
 	it('INSTALLED stores encrypted install token', async () => {
 		const pair = await generateKeyPair('RS256');
 		await setVerificationKeyForTests(await exportSPKI(pair.publicKey));
-		const db = createD1Mock();
+		const db = createTestDb();
+		vi.mocked(getDb).mockReturnValue(db as unknown as Db);
 		const env = {
-			persistence: db,
+			persistence: {} as D1Database,
 			KEK: { get: async () => TEST_KEK },
 			cache: { delete: async () => {} },
 			ADDON_KEY

@@ -2,6 +2,7 @@ import prettier from 'eslint-config-prettier';
 import path from 'node:path';
 import { includeIgnoreFile } from '@eslint/compat';
 import js from '@eslint/js';
+import drizzle from 'eslint-plugin-drizzle';
 import svelte from 'eslint-plugin-svelte';
 import { defineConfig } from 'eslint/config';
 import globals from 'globals';
@@ -41,5 +42,13 @@ export default defineConfig(
 		// Override or add rule settings here, such as:
 		// 'svelte/button-has-type': 'error'
 		rules: {}
+	},
+	{
+		files: ['src/lib/server/db/**/*.ts'],
+		plugins: { drizzle },
+		rules: {
+			'drizzle/enforce-delete-with-where': ['error', { drizzleObjectName: ['db'] }],
+			'drizzle/enforce-update-with-where': ['error', { drizzleObjectName: ['db'] }]
+		}
 	}
 );

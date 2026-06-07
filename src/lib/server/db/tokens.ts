@@ -1,88 +1,94 @@
+import { and, eq } from 'drizzle-orm';
 import { decryptSecret, encryptSecret, type EncryptedBlob } from '../crypto';
-import { TABLES, type TokenType } from './schema';
+import type { Db } from './index';
+import { encryptedSecrets, type TokenType } from './schema';
 
 function rowToBlob(row: {
-	iv: ArrayBuffer | Uint8Array;
-	ciphertext: ArrayBuffer | Uint8Array;
-	key_version: number;
+	iv: Uint8Array;
+	ciphertext: Uint8Array;
+	keyVersion: number;
 }): EncryptedBlob {
 	return {
-		iv: row.iv instanceof Uint8Array ? row.iv : new Uint8Array(row.iv),
-		ciphertext:
-			row.ciphertext instanceof Uint8Array ? row.ciphertext : new Uint8Array(row.ciphertext),
-		keyVersion: row.key_version
+		iv: row.iv,
+		ciphertext: row.ciphertext,
+		keyVersion: row.keyVersion
 	};
 }
 
 export async function storeEncryptedToken(
-	db: D1Database,
+	db: Db,
 	workspaceId: string,
 	tokenType: TokenType,
 	plaintext: string,
 	env: Env
 ): Promise<void> {
 	const encrypted = await encryptSecret(plaintext, workspaceId, env);
+	const updatedAt = new Date().toISOString();
+
 	await db
-		.prepare(
-			`INSERT INTO ${TABLES.encryptedSecrets}
-       (workspace_id, token_type, iv, ciphertext, key_version, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?)
-       ON CONFLICT(workspace_id, token_type) DO UPDATE SET
-         iv = excluded.iv,
-         ciphertext = excluded.ciphertext,
-         key_version = excluded.key_version,
-         updated_at = excluded.updated_at`
-		)
-		.bind(
+		.insert(encryptedSecrets)
+		.values({
 			workspaceId,
 			tokenType,
-			encrypted.iv,
-			encrypted.ciphertext,
-			encrypted.keyVersion,
-			new Date().toISOString()
-		)
-		.run();
+			iv: encrypted.iv,
+			ciphertext: encrypted.ciphertext,
+			keyVersion: encrypted.keyVersion,
+			updatedAt
+		})
+		.onConflictDoUpdate({
+			target: [encryptedSecrets.workspaceId, encryptedSecrets.tokenType],
+			set: {
+				iv: encrypted.iv,
+				ciphertext: encrypted.ciphertext,
+				keyVersion: encrypted.keyVersion,
+				updatedAt
+			}
+		});
 }
 
 export async function getEncryptedToken(
-	db: D1Database,
+	db: Db,
 	workspaceId: string,
 	tokenType: TokenType,
 	env: Env
 ): Promise<string | null> {
 	const row = await db
-		.prepare(
-			`SELECT iv, ciphertext, key_version FROM ${TABLES.encryptedSecrets}
-       WHERE workspace_id = ? AND token_type = ?`
+		.select({
+			iv: encryptedSecrets.iv,
+			ciphertext: encryptedSecrets.ciphertext,
+			keyVersion: encryptedSecrets.keyVersion
+		})
+		.from(encryptedSecrets)
+		.where(
+			and(
+				eq(encryptedSecrets.workspaceId, workspaceId),
+				eq(encryptedSecrets.tokenType, tokenType)
+			)
 		)
-		.bind(workspaceId, tokenType)
-		.first<{
-			iv: ArrayBuffer;
-			ciphertext: ArrayBuffer;
-			key_version: number;
-		}>();
+		.get();
 
 	if (!row) return null;
 	return decryptSecret(rowToBlob(row), workspaceId, env);
 }
 
-export async function deleteWorkspaceSecrets(db: D1Database, workspaceId: string): Promise<void> {
-	await db
-		.prepare(`DELETE FROM ${TABLES.encryptedSecrets} WHERE workspace_id = ?`)
-		.bind(workspaceId)
-		.run();
+export async function deleteWorkspaceSecrets(db: Db, workspaceId: string): Promise<void> {
+	await db.delete(encryptedSecrets).where(eq(encryptedSecrets.workspaceId, workspaceId));
 }
 
 export async function hasEncryptedToken(
-	db: D1Database,
+	db: Db,
 	workspaceId: string,
 	tokenType: TokenType
 ): Promise<boolean> {
 	const row = await db
-		.prepare(
-			`SELECT 1 as ok FROM ${TABLES.encryptedSecrets} WHERE workspace_id = ? AND token_type = ?`
+		.select({ ok: encryptedSecrets.workspaceId })
+		.from(encryptedSecrets)
+		.where(
+			and(
+				eq(encryptedSecrets.workspaceId, workspaceId),
+				eq(encryptedSecrets.tokenType, tokenType)
+			)
 		)
-		.bind(workspaceId, tokenType)
-		.first<{ ok: number }>();
-	return row?.ok === 1;
+		.get();
+	return row !== undefined;
 }

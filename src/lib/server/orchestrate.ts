@@ -9,6 +9,7 @@ import { createInvoice, issueInvoice, uploadAttachment } from './clients/request
 import { NOTE_LINK_PREFIX } from './config';
 import { BadRequestError } from './errors';
 import { getMapping, insertMapping } from './db/idempotency';
+import { getDb } from './db/index';
 import { buildRfLineItems } from './money';
 import { getRfToken } from './rf-token';
 import { loadWorkspaceSettings, resolveRfClientId } from './settings';
@@ -35,7 +36,8 @@ export async function generateRfInvoice(
 	overrides: GenerateOverrides
 ): Promise<GenerateResult> {
 	const workspaceId = claims.workspaceId;
-	const existing = await getMapping(env.persistence, workspaceId, invoiceId);
+	const db = getDb(env);
+	const existing = await getMapping(db, workspaceId, invoiceId);
 	if (existing) {
 		return {
 			paymentLink: existing.payment_link,
@@ -45,7 +47,7 @@ export async function generateRfInvoice(
 		};
 	}
 
-	const installToken = await getInstallToken(env.persistence, workspaceId, env);
+	const installToken = await getInstallToken(db, workspaceId, env);
 	const clockifyOpts = { backendUrl: claims.backendUrl, installToken };
 	const settings = await loadWorkspaceSettings(claims.backendUrl, workspaceId, installToken, env);
 
@@ -106,7 +108,7 @@ export async function generateRfInvoice(
 	const noteLine = `${NOTE_LINK_PREFIX}${paymentLink}`;
 	await updateInvoiceNote(clockifyOpts, workspaceId, invoiceId, noteLine);
 
-	await insertMapping(env.persistence, {
+	await insertMapping(db, {
 		workspace_id: workspaceId,
 		clockify_invoice_id: invoiceId,
 		rf_invoice_id: created.id,

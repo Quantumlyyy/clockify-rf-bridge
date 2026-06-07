@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { deleteWorkspaceMappings, getMapping, insertMapping } from './idempotency';
-import { createD1Mock } from './d1-mock';
+import { createTestDb } from './test-db';
 
 describe('idempotency', () => {
 	it('inserts mapping once', async () => {
-		const db = createD1Mock();
+		const db = createTestDb();
 		const row = await insertMapping(db, {
 			workspace_id: 'ws-1',
 			clockify_invoice_id: 'inv-1',
@@ -16,7 +16,7 @@ describe('idempotency', () => {
 	});
 
 	it('returns existing mapping on duplicate insert', async () => {
-		const db = createD1Mock();
+		const db = createTestDb();
 		await insertMapping(db, {
 			workspace_id: 'ws-1',
 			clockify_invoice_id: 'inv-1',
@@ -35,7 +35,7 @@ describe('idempotency', () => {
 	});
 
 	it('deletes workspace mappings', async () => {
-		const db = createD1Mock();
+		const db = createTestDb();
 		await insertMapping(db, {
 			workspace_id: 'ws-1',
 			clockify_invoice_id: 'inv-1',

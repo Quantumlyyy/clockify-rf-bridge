@@ -8,7 +8,7 @@ import {
 } from '$lib/server/auth';
 import { CLOCKIFY_JWT_ISSUER, CLOCKIFY_JWT_TYPE } from '$lib/server/config';
 import { storeEncryptedToken, hasEncryptedToken } from '$lib/server/db/tokens';
-import { createD1Mock } from '$lib/server/db/d1-mock';
+import { createTestDb } from '$lib/server/db/test-db';
 
 const TEST_KEK = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
 const ADDON_KEY = 'clockify-rf-bridge';
@@ -41,9 +41,8 @@ describe('rf-token API logic', () => {
 	});
 
 	it('stores encrypted RF token without echoing', async () => {
-		const db = createD1Mock();
+		const db = createTestDb();
 		const env = {
-			persistence: db,
 			KEK: { get: async () => TEST_KEK }
 		} as unknown as Env;
 

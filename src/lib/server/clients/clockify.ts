@@ -1,4 +1,5 @@
 import { getEncryptedToken } from '../db/tokens';
+import type { Db } from '../db/index';
 import type { ClockifyInvoice, WorkspaceSettings } from '../types/clockify';
 import { BadRequestError } from '../errors';
 
@@ -36,7 +37,7 @@ async function clockifyFetch<T>(url: string, installToken: string, init?: Reques
 }
 
 export async function getInstallToken(
-	db: D1Database,
+	db: Db,
 	workspaceId: string,
 	env: Env
 ): Promise<string> {
