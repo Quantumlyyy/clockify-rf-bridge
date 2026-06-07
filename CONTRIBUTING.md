@@ -21,7 +21,7 @@ Run these before pushing:
 ```bash
 pnpm lint      # oxfmt + oxlint + eslint
 pnpm test      # vitest in all workspaces
-pnpm check     # svelte-check type-check
+pnpm check     # bridge production build + svelte-check type-check
 ```
 
 CI runs the same checks on every push and pull request.

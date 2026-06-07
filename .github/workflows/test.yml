@@ -10,13 +10,17 @@ concurrency:
   group: test-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  actions: write
+
 jobs:
   test:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Install pnpm
         uses: pnpm/action-setup@a0ea98b2dc7d387a59324835f7421c1d5f8357b4 # v6.0.5
@@ -45,12 +49,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: Quantumlyyy/clockify-rf-bridge
-          files: |
-            apps/bridge/coverage/lcov.info
-            packages/db/coverage/lcov.info
-            packages/invoice-core/coverage/lcov.info
-            packages/request-finance/coverage/lcov.info
-            packages/workspace-store/coverage/lcov.info
+          files: apps/bridge/coverage/lcov.info,packages/db/coverage/lcov.info,packages/invoice-core/coverage/lcov.info,packages/request-finance/coverage/lcov.info,packages/workspace-store/coverage/lcov.info
           fail_ci_if_error: false
 
       - name: Upload test results to Codecov
@@ -58,13 +57,10 @@ jobs:
         uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          report-type: test_results
-          files: |
-            apps/bridge/test-results/junit.xml
-            packages/db/test-results/junit.xml
-            packages/invoice-core/test-results/junit.xml
-            packages/request-finance/test-results/junit.xml
-            packages/workspace-store/test-results/junit.xml
+          report_type: test_results
+          disable_search: true
+          files: apps/bridge/test-results/junit.xml,packages/db/test-results/junit.xml,packages/invoice-core/test-results/junit.xml,packages/request-finance/test-results/junit.xml,packages/workspace-store/test-results/junit.xml
+          fail_ci_if_error: false
 
       - name: Build bridge (bundle analysis)
         if: ${{ !cancelled() }}
