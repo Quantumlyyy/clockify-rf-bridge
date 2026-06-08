@@ -3,11 +3,14 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
 
+const enableBundleAnalysis =
+	process.env.ENABLE_CODECOV_BUNDLE_ANALYSIS === 'true' && process.env.CODECOV_TOKEN !== undefined;
+
 export default defineConfig({
 	plugins: [
 		sveltekit(),
 		codecovSvelteKitPlugin({
-			enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
+			enableBundleAnalysis,
 			bundleName: 'bridge',
 			uploadToken: process.env.CODECOV_TOKEN
 		})

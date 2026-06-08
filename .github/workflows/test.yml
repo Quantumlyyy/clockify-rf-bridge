@@ -62,8 +62,13 @@ jobs:
           files: apps/bridge/test-results/junit.xml,packages/db/test-results/junit.xml,packages/invoice-core/test-results/junit.xml,packages/request-finance/test-results/junit.xml,packages/workspace-store/test-results/junit.xml
           fail_ci_if_error: false
 
+      - name: Build bridge
+        if: github.event_name == 'pull_request' && !cancelled()
+        run: pnpm build
+
       - name: Build bridge (bundle analysis)
-        if: ${{ !cancelled() }}
+        if: github.event_name == 'push' && !cancelled()
         run: pnpm build
         env:
+          ENABLE_CODECOV_BUNDLE_ANALYSIS: 'true'
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
